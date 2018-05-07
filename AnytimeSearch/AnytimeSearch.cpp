@@ -36,7 +36,7 @@ int main()
 	{ 6,	4,	8 },
 	{ 3,	5,	1 } };//*/
 	FifteenPuzzle* puzzle = new FifteenPuzzle(start);
-	AStarRestarting* search = new AStarRestarting(puzzle, puzzle->adjacent, puzzle->hFunction, puzzle->cFunction, puzzle->isGoal, puzzle->isEqual, puzzle->start, 1.5);
+	AStarRestarting* search = new AStarRestarting(puzzle, puzzle->adjacent, puzzle->hFunction, puzzle->cFunction, puzzle->isGoal, puzzle->isEqual, puzzle->start, 1);
 	puzzle->search = search;
 	auto startTime = std::chrono::high_resolution_clock::now();
 	std::chrono::milliseconds total = std::chrono::milliseconds::zero();

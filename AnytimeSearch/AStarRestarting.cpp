@@ -58,7 +58,7 @@ std::list<void*>* AStarRestarting::nextSolution()
 			{
 				//successors[i] = new Node();
 				successors[i].thisNode = *it;
-				successors[i].parentNode = &currentNode;
+				successors[i].parentNode = &*(--closed.end());
 				successors[i].g = currentNode.g + cFunction(graph, currentNode.thisNode, *it);
 				successors[i].f = successors[i].g + hFunction(graph, *it);
 				successors[i].fw = successors[i].g + w * hFunction(graph, *it);
