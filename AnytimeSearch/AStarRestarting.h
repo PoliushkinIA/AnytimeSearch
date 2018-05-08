@@ -18,17 +18,19 @@ protected:
 	struct Node
 	{
 		N thisNode;
-		Node* parentNode;
+		const Node* parentNode;
 		double g;
 		double f;
 		double fw;
 		bool operator <(const Node x) const
 		{
-			return fw < x.fw;
+			return fw < x.fw || fw == x.fw && thisNode < x.thisNode;
 		}
 	};
 	std::multiset<Node> open;
-	std::list<Node> closed;
+	//std::list<Node> closed;
+	std::multiset<Node> closed;
+	//std::multimap<Node, typename std::list<Node>::iterator> fast_check_closed;
 	Node* start;
 	Node* incumbent;
 	double w;
@@ -79,16 +81,18 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 		// Check, whether node's f-cost is not greater than the current upper bound
 		if (incumbent == nullptr || currentNode.f < incumbent->f)
 		{
-			closed.emplace_back(currentNode);
+			//closed.emplace_back(currentNode);
+			//fast_check_closed.insert({ currentNode, --closed.end() });
+			auto currentNodeIterator = closed.insert(currentNode);
 			std::list<N>&& adjtmp = graph->adjacent(currentNode.thisNode);
-			int adjcnt = adjtmp.size();
+			size_t adjcnt = adjtmp.size();
 			auto it = adjtmp.begin();
 			Node* successors = new Node[adjtmp.size()];
 			for (int i = 0; it != adjtmp.end(); i++, it++)
 			{
 				//successors[i] = new Node();
 				successors[i].thisNode = *it;
-				successors[i].parentNode = &*(--closed.end());
+				successors[i].parentNode = &*currentNodeIterator;
 				successors[i].g = currentNode.g + graph->cFunction(currentNode.thisNode, *it);
 				successors[i].f = successors[i].g + graph->hFunction(*it);
 				successors[i].fw = successors[i].g + w * graph->hFunction(*it);
@@ -103,26 +107,21 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 					break;
 				}
 				// Reexpanding node
-				/*auto placeInOpen = std::find_if(open.begin(), open.end(), [&successors, &i, this](const Node& n) mutable {
-					return isEqual(graph, n.thisNode, successors[i].thisNode);
-				});*/
-				auto placeInClosed = std::find_if(closed.begin(), closed.end(), [&successors, &i, this](const Node& n) mutable {
-					return n.thisNode == successors[i].thisNode;
-				});
-				bool newNode = /*placeInOpen == open.end() && */placeInClosed == closed.end();
-				/*if (placeInOpen != open->end() && (*placeInOpen)->g > successors[i]->g)
-				{
-				delete *placeInOpen;
-				open->erase(placeInOpen);
-				insert(successors[i]);
-				}*/
-				if (placeInClosed != closed.end() && placeInClosed->g > successors[i].g)
-				{
-					//delete *placeInClosed;
+				auto placeInClosed = closed.find(successors[i]);
+				auto placeInOpen = open.find(successors[i]);
+				const bool newNode = placeInClosed == closed.end() && placeInOpen == open.end(); //&& placeInClosed == closed_.end();
+
+				if (placeInClosed != closed.end() && placeInClosed->g > successors[i].g) {
 					closed.erase(placeInClosed);
 					open.insert(successors[i]);
 
 				}
+				if (placeInOpen != open.end() && placeInOpen->g > successors[i].g)
+				{
+					open.erase(placeInOpen);
+					open.insert(successors[i]);
+				}
+
 				// Expanding a new node
 				if (newNode)
 				{
@@ -136,7 +135,7 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 		throw "No solution";
 	// Constructing the solution
 	std::list<N> solution;
-	Node* currentNode = incumbent;
+	const Node* currentNode = incumbent;
 	while (currentNode != nullptr)
 	{
 		solution.push_front(currentNode->thisNode);

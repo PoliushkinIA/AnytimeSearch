@@ -5,14 +5,18 @@
 class FifteenPuzzle
 {
 public:
-	static const int N = 3;
+	static const int N = 4;
 	struct State
 	{
 		//int positions[N][N];
 		std::array<std::array<int, N>, N> positions;
-		int operator ==(const State &s) const
+		bool operator ==(const State &s) const
 		{
 			return positions == s.positions;
+		}
+		bool operator <(const State &s) const
+		{
+			return positions < s.positions;
 		}
 	};
 	FifteenPuzzle(int _start[N][N]);
