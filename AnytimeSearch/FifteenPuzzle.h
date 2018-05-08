@@ -5,7 +5,7 @@
 class FifteenPuzzle
 {
 public:
-	static const int N = 4;
+	static const int N = 3;
 	struct State
 	{
 		//int positions[N][N];

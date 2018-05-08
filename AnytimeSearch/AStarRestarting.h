@@ -24,12 +24,12 @@ protected:
 		double fw;
 		bool operator <(const Node x) const
 		{
-			return fw < x.fw || fw == x.fw && thisNode < x.thisNode;
+			return fw < x.fw /*|| fw == x.fw && thisNode < x.thisNode*/;
 		}
 	};
 	std::multiset<Node> open;
 	//std::list<Node> closed;
-	std::multiset<Node> closed;
+	std::multiset <Node, std::function<bool(const Node&, const Node&)>> closed;
 	//std::multimap<Node, typename std::list<Node>::iterator> fast_check_closed;
 	Node* start;
 	Node* incumbent;
@@ -42,7 +42,7 @@ AStarRestarting<G, N>::AStarRestarting(
 	N      start,
 	double w
 	) :
-	SearchBase(graph), w(w)
+	SearchBase(graph), w(w), closed([](const Node& a, const Node& b) { return a.thisNode < b.thisNode; })
 {
 	this->start = new Node();
 	this->start->thisNode = start;
@@ -64,13 +64,7 @@ AStarRestarting<G, N>::~AStarRestarting()
 template<class G, class N>
 std::list<N> AStarRestarting<G, N>::nextSolution()
 {
-	auto comp = [](Node* n1, Node* n2) {return *n1 < *n2; };
 	// Initialize open and closed lists
-	//open = new std::list<Node*>();
-	//open.clear();
-
-	//closed = new std::list<Node*>();
-	//open->emplace_back(new Node(*start));
 	open.insert(Node(*start));
 	bool solutionFound = false;
 	// Expanding nodes
@@ -108,19 +102,19 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 				}
 				// Reexpanding node
 				auto placeInClosed = closed.find(successors[i]);
-				auto placeInOpen = open.find(successors[i]);
-				const bool newNode = placeInClosed == closed.end() && placeInOpen == open.end(); //&& placeInClosed == closed_.end();
+				/*auto placeInOpen = open.find(successors[i]);*/
+				const bool newNode = placeInClosed == closed.end() /*&& placeInOpen == open.end()*/; 
 
 				if (placeInClosed != closed.end() && placeInClosed->g > successors[i].g) {
 					closed.erase(placeInClosed);
 					open.insert(successors[i]);
 
 				}
-				if (placeInOpen != open.end() && placeInOpen->g > successors[i].g)
+				/*if (placeInOpen != open.end() && placeInOpen->g > successors[i].g)
 				{
 					open.erase(placeInOpen);
 					open.insert(successors[i]);
-				}
+				}*/
 
 				// Expanding a new node
 				if (newNode)
@@ -132,7 +126,7 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 		}
 	}
 	if (!solutionFound)
-		throw "No solution";
+		throw std::runtime_error("No solution");
 	// Constructing the solution
 	std::list<N> solution;
 	const Node* currentNode = incumbent;

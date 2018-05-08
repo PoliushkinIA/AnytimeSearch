@@ -4,11 +4,11 @@
 #include "stdafx.h"
 #include "FifteenPuzzle.h"
 #include "AStarRestarting.h"
-#define N 4
+#define N 3
 
 int main()
 {
-	int start[N][N] =//*
+	int start[N][N] =/*
 					 {
 		{ 8,	14,	9,	12 },
 		{ 7,	5,	0,	13 },
@@ -31,21 +31,21 @@ int main()
 	{ { 3,	8,	1 },
 	{ 4,	2,	7 },
 	{ 0,	6,	5 } };//*/
-	/*
+	//*
 	{ { 0,	7,	2 },
 	{ 6,	4,	8 },
 	{ 3,	5,	1 } };//*/
 	FifteenPuzzle* puzzle = new FifteenPuzzle(start);
-	AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>* search = new AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 1);
+	AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>* search = new AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 4);
 	puzzle->search = search;
 	auto startTime = std::chrono::high_resolution_clock::now();
-	std::chrono::milliseconds total = std::chrono::milliseconds::zero();
+	std::chrono::microseconds total = std::chrono::microseconds::zero();
 	while (puzzle->getSolution())
 	{
 		auto it = puzzle->solutions.end();
 		it--;
 		auto endTime = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
 		/*for each (auto var in **it)
 		{
 			for (int i = 0; i < N; i++, std::cout << std::endl)
