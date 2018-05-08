@@ -15,6 +15,12 @@ int main()
 		{ 10,	15,	1,	11 },
 		{ 4,	2,	6,	3 } };//*/
 		/*
+		{
+		{ 12,	7,	8,	1 },
+		{ 14,	11,	13,	6 },
+		{ 15,	5,	3,	9 },
+		{ 0,	10,	2,	4 } };//*/
+		/*
 	{ {3,  7, 11, 15},
  {2, 13,  9,  4},
  {5, 14,  6, 12},
@@ -36,7 +42,7 @@ int main()
 	{ 6,	4,	8 },
 	{ 3,	5,	1 } };//*/
 	FifteenPuzzle* puzzle = new FifteenPuzzle(start);
-	AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>* search = new AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 4);
+	AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>* search = new AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 2);
 	puzzle->search = search;
 	auto startTime = std::chrono::high_resolution_clock::now();
 	std::chrono::microseconds total = std::chrono::microseconds::zero();
@@ -53,12 +59,12 @@ int main()
 					std::cout << var->positions[i][j] << ' ';
 			std::cout << "---------------------------------" << std::endl;
 		}*/
-		std::cout << "Solving took " << duration.count() << "ms\n" << "Solution length is " << it->size() << std::endl;
+		std::cout << "Solving took " << duration.count() << "us\n" << "Solution length is " << it->size() << '\n' << "Error bound is " << search->error << std::endl;
 		total += duration;
 		startTime = std::chrono::high_resolution_clock::now();
 	}
 	std::cout << "Total " << puzzle->solutions.size() << " solutions\n"
-		<< "Total time: " << total.count() << "ms" << std::endl;
+		<< "Total time: " << total.count() << "us" << std::endl;
 	_gettch();
 	return 0;
 }

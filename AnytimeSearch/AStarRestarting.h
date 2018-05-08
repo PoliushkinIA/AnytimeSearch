@@ -14,6 +14,7 @@ public:
 		);
 	~AStarRestarting();
 	std::list<N> nextSolution();
+	double error = -1;
 protected:
 	struct Node
 	{
@@ -24,17 +25,17 @@ protected:
 		double fw;
 		bool operator <(const Node x) const
 		{
-			return fw < x.fw /*|| fw == x.fw && thisNode < x.thisNode*/;
+			return fw < x.fw;
 		}
 	};
 	std::multiset<Node> open;
-	//std::list<Node> closed;
-	std::multiset <Node, std::function<bool(const Node&, const Node&)>> closed;
-	//std::multimap<Node, typename std::list<Node>::iterator> fast_check_closed;
+	std::multiset<Node, std::function<bool(const Node&, const Node&)>> closed;
 	Node* start;
 	Node* incumbent;
 	double w;
 };
+
+
 
 template<class G, class N>
 AStarRestarting<G, N>::AStarRestarting(
@@ -67,54 +68,53 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 	// Initialize open and closed lists
 	open.insert(Node(*start));
 	bool solutionFound = false;
+
 	// Expanding nodes
 	while (!open.empty() && !solutionFound)
 	{
 		Node currentNode = *open.begin();
 		open.erase(open.begin());
 		// Check, whether node's f-cost is not greater than the current upper bound
-		if (incumbent == nullptr || currentNode.f < incumbent->f)
+		if (incumbent == nullptr || currentNode.f < incumbent->g)
 		{
-			//closed.emplace_back(currentNode);
-			//fast_check_closed.insert({ currentNode, --closed.end() });
 			auto currentNodeIterator = closed.insert(currentNode);
+
 			std::list<N>&& adjtmp = graph->adjacent(currentNode.thisNode);
 			size_t adjcnt = adjtmp.size();
+
 			auto it = adjtmp.begin();
 			Node* successors = new Node[adjtmp.size()];
 			for (int i = 0; it != adjtmp.end(); i++, it++)
 			{
-				//successors[i] = new Node();
 				successors[i].thisNode = *it;
 				successors[i].parentNode = &*currentNodeIterator;
 				successors[i].g = currentNode.g + graph->cFunction(currentNode.thisNode, *it);
 				successors[i].f = successors[i].g + graph->hFunction(*it);
 				successors[i].fw = successors[i].g + w * graph->hFunction(*it);
 			}
+
+			// Examinating successors
 			for (int i = 0; i < adjcnt; i++)
 			{
 				// Goal node is found
 				if (graph->isGoal(successors[i].thisNode))
 				{
 					solutionFound = true;
+					if (incumbent != nullptr)
+						delete incumbent;
 					incumbent = new Node(successors[i]);
 					break;
 				}
+
 				// Reexpanding node
 				auto placeInClosed = closed.find(successors[i]);
-				/*auto placeInOpen = open.find(successors[i]);*/
-				const bool newNode = placeInClosed == closed.end() /*&& placeInOpen == open.end()*/; 
+				const bool newNode = placeInClosed == closed.end(); 
 
-				if (placeInClosed != closed.end() && placeInClosed->g > successors[i].g) {
+				if (placeInClosed != closed.end() && placeInClosed->g > successors[i].g)
+				{
 					closed.erase(placeInClosed);
 					open.insert(successors[i]);
-
 				}
-				/*if (placeInOpen != open.end() && placeInOpen->g > successors[i].g)
-				{
-					open.erase(placeInOpen);
-					open.insert(successors[i]);
-				}*/
 
 				// Expanding a new node
 				if (newNode)
@@ -125,8 +125,10 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 			delete[] successors;
 		}
 	}
+
 	if (!solutionFound)
 		throw std::runtime_error("No solution");
+
 	// Constructing the solution
 	std::list<N> solution;
 	const Node* currentNode = incumbent;
@@ -135,7 +137,12 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 		solution.push_front(currentNode->thisNode);
 		currentNode = currentNode->parentNode;
 	}
+
+	// Clean up
 	open.clear();
 	closed.clear();
+
+	// Calculate the error bound
+	error = incumbent->f - open.begin()->f;
 	return solution;
 }
