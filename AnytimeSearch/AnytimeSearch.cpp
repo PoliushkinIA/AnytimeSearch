@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "FifteenPuzzle.h"
 #include "AStarRestarting.h"
+#include "AStarContinuing.h"
+#include "AStarRepairing.h"
 #define N 3
 
 int main()
@@ -41,11 +43,19 @@ int main()
 	{ { 0,	7,	2 },
 	{ 6,	4,	8 },
 	{ 3,	5,	1 } };//*/
-	FifteenPuzzle* puzzle = new FifteenPuzzle(start);
-	AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>* search = new AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 2);
+	
+	FifteenPuzzle* puzzle;
+	SearchBase<FifteenPuzzle, FifteenPuzzle::State>* search;
+	std::chrono::time_point<std::chrono::steady_clock> startTime;
+	std::chrono::microseconds total;
+
+
+	std::cout << "Restarting A*\n";
+	puzzle = new FifteenPuzzle(start);
+	search = new AStarRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 10);
 	puzzle->search = search;
-	auto startTime = std::chrono::high_resolution_clock::now();
-	std::chrono::microseconds total = std::chrono::microseconds::zero();
+	startTime = std::chrono::high_resolution_clock::now();
+	total = std::chrono::microseconds::zero();
 	while (puzzle->getSolution())
 	{
 		auto it = puzzle->solutions.end();
@@ -58,6 +68,64 @@ int main()
 				for (int j = 0; j < N; j++)
 					std::cout << var->positions[i][j] << ' ';
 			std::cout << "---------------------------------" << std::endl;
+		}//*/
+		std::cout << "Solving took " << duration.count() << "us\n" << "Solution length is " << it->size() << '\n' << "Error bound is " << search->error << std::endl;
+		total += duration;
+		startTime = std::chrono::high_resolution_clock::now();
+	}
+	std::cout << "Total " << puzzle->solutions.size() << " solutions\n"
+		<< "Total time: " << total.count() << "us" << std::endl;
+	delete puzzle;
+	std::cout << "---------------------------------\n\n";
+
+
+	std::cout << "Continuing A*\n";
+	puzzle = new FifteenPuzzle(start);
+	search = new AStarContinuing<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 10);
+	puzzle->search = search;
+	startTime = std::chrono::high_resolution_clock::now();
+	total = std::chrono::microseconds::zero();
+	while (puzzle->getSolution())
+	{
+		auto it = puzzle->solutions.end();
+		it--;
+		auto endTime = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+		/*for each (auto var in **it)
+		{
+		for (int i = 0; i < N; i++, std::cout << std::endl)
+		for (int j = 0; j < N; j++)
+		std::cout << var->positions[i][j] << ' ';
+		std::cout << "---------------------------------" << std::endl;
+		}*/
+		std::cout << "Solving took " << duration.count() << "us\n" << "Solution length is " << it->size() << '\n' << "Error bound is " << search->error << std::endl;
+		total += duration;
+		startTime = std::chrono::high_resolution_clock::now();
+	}
+	std::cout << "Total " << puzzle->solutions.size() << " solutions\n"
+		<< "Total time: " << total.count() << "us" << std::endl;
+	delete puzzle;
+	std::cout << "---------------------------------\n\n";
+
+
+	std::cout << "Repairing A*\n";
+	puzzle = new FifteenPuzzle(start);
+	search = new AStarRepairing<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 10);
+	puzzle->search = search;
+	startTime = std::chrono::high_resolution_clock::now();
+	total = std::chrono::microseconds::zero();
+	while (puzzle->getSolution())
+	{
+		auto it = puzzle->solutions.end();
+		it--;
+		auto endTime = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+		/*for each (auto var in **it)
+		{
+		for (int i = 0; i < N; i++, std::cout << std::endl)
+		for (int j = 0; j < N; j++)
+		std::cout << var->positions[i][j] << ' ';
+		std::cout << "---------------------------------" << std::endl;
 		}*/
 		std::cout << "Solving took " << duration.count() << "us\n" << "Solution length is " << it->size() << '\n' << "Error bound is " << search->error << std::endl;
 		total += duration;

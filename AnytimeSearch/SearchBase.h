@@ -8,6 +8,7 @@ public:
 	SearchBase(G* graph);
 	virtual ~SearchBase();
 	virtual std::list<N> nextSolution() = 0;
+	double error;
 protected:
 	G* graph;
 };

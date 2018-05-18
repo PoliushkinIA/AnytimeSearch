@@ -1,18 +1,18 @@
-// Anytime Weighted A* with restarting
+// Anytime Weighted A* with continuing
 #pragma once
 #include "SearchBase.h"
 #include "stdafx.h"
 template<class G, class N>
-class AStarRestarting :
+class AStarContinuing :
 	public SearchBase<G, N>
 {
 public:
-	AStarRestarting(
+	AStarContinuing(
 		G*     graph,
 		N      start,
 		double w
 		);
-	~AStarRestarting();
+	~AStarContinuing();
 	std::list<N> nextSolution();
 protected:
 	struct Node
@@ -27,9 +27,9 @@ protected:
 			return fw < x.fw;
 		}
 	};
-	struct NodeComparator 
+	struct NodeComparator
 	{
-		bool operator()(const Node& lhs, const Node& rhs) const 
+		bool operator()(const Node& lhs, const Node& rhs) const
 		{
 			return lhs.thisNode < rhs.thisNode;
 		}
@@ -44,7 +44,7 @@ protected:
 
 
 template<class G, class N>
-AStarRestarting<G, N>::AStarRestarting(
+AStarContinuing<G, N>::AStarContinuing(
 	G*     graph,
 	N      start,
 	double w
@@ -58,21 +58,24 @@ AStarRestarting<G, N>::AStarRestarting(
 	this->start->f = graph->hFunction(start);
 	this->start->fw = w * graph->hFunction(start);
 	incumbent = nullptr;
+	// Initialize open and closed lists
+	open.insert(Node(*this->start));
 }
 
 
 template<class G, class N>
-AStarRestarting<G, N>::~AStarRestarting()
+AStarContinuing<G, N>::~AStarContinuing()
 {
+	// Clean up
+	open.clear();
+	closed.clear();
 	delete start;
 }
 
 
 template<class G, class N>
-std::list<N> AStarRestarting<G, N>::nextSolution()
+std::list<N> AStarContinuing<G, N>::nextSolution()
 {
-	// Initialize open and closed lists
-	open.insert(Node(*start));
 	bool solutionFound = false;
 
 	// Expanding nodes
@@ -114,7 +117,7 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 
 				// Reexpanding node
 				auto placeInClosed = closed.find(successors[i]);
-				const bool newNode = placeInClosed == closed.end(); 
+				const bool newNode = placeInClosed == closed.end();
 
 				if (placeInClosed != closed.end() && placeInClosed->g > successors[i].g)
 				{
@@ -146,10 +149,6 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 
 	// Calculate the error bound
 	error = incumbent->f - open.begin()->f;
-	
-	// Clean up
-	open.clear();
-	closed.clear();
 
 	return solution;
 }

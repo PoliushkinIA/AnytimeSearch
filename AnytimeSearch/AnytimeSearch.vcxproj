@@ -141,6 +141,8 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AStarContinuing.h" />
+    <ClInclude Include="AStarRepairing.h" />
     <ClInclude Include="AStarRestarting.h" />
     <ClInclude Include="FifteenPuzzle.h" />
     <ClInclude Include="SearchBase.h" />
