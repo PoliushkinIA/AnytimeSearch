@@ -2,22 +2,22 @@
 #pragma once
 #include "SearchBase.h"
 #include "stdafx.h"
-template<class G, class N>
+template<class G, class S>
 class AStarRestarting :
-	public SearchBase<G, N>
+	public SearchBase<G, S>
 {
 public:
 	AStarRestarting(
 		G*     graph,
-		N      start,
+		S      start,
 		double w
 		);
 	~AStarRestarting();
-	std::list<N> nextSolution();
+	std::list<S> nextSolution();
 protected:
 	struct Node
 	{
-		N thisNode;
+		S thisNode;
 		const Node* parentNode;
 		double g;
 		double f;
@@ -43,10 +43,10 @@ protected:
 
 
 
-template<class G, class N>
-AStarRestarting<G, N>::AStarRestarting(
+template<class G, class S>
+AStarRestarting<G, S>::AStarRestarting(
 	G*     graph,
-	N      start,
+	S      start,
 	double w
 	) :
 	SearchBase(graph), w(w)//, closed([](const Node& a, const Node& b) { return a.thisNode < b.thisNode; })
@@ -61,15 +61,15 @@ AStarRestarting<G, N>::AStarRestarting(
 }
 
 
-template<class G, class N>
-AStarRestarting<G, N>::~AStarRestarting()
+template<class G, class S>
+AStarRestarting<G, S>::~AStarRestarting()
 {
 	delete start;
 }
 
 
-template<class G, class N>
-std::list<N> AStarRestarting<G, N>::nextSolution()
+template<class G, class S>
+std::list<S> AStarRestarting<G, S>::nextSolution()
 {
 	// Initialize open and closed lists
 	open.insert(Node(*start));
@@ -85,7 +85,7 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 		{
 			auto currentNodeIterator = closed.insert(currentNode);
 
-			std::list<N>&& adjtmp = graph->adjacent(currentNode.thisNode);
+			std::list<S>&& adjtmp = graph->adjacent(currentNode.thisNode);
 			size_t adjcnt = adjtmp.size();
 
 			auto it = adjtmp.begin();
@@ -136,7 +136,7 @@ std::list<N> AStarRestarting<G, N>::nextSolution()
 		throw std::runtime_error("No solution");
 
 	// Constructing the solution
-	std::list<N> solution;
+	std::list<S> solution;
 	const Node* currentNode = incumbent;
 	while (currentNode != nullptr)
 	{

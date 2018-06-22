@@ -2,23 +2,23 @@
 #pragma once
 #include "SearchBase.h"
 #include "stdafx.h"
-template<class G, class N>
+template<class G, class S>
 class AStarRepairing :
-	public SearchBase<G, N>
+	public SearchBase<G, S>
 {
 public:
 	AStarRepairing(
 		G*     graph,
-		N      start,
+		S      start,
 		double w
 		);
 	~AStarRepairing();
-	std::list<N> nextSolution();
+	std::list<S> nextSolution();
 	double weightDecreaseRate = 0.5;
 protected:
 	struct Node
 	{
-		N thisNode;
+		S thisNode;
 		const Node* parentNode;
 		double g;
 		double f;
@@ -45,10 +45,10 @@ protected:
 
 
 
-template<class G, class N>
-AStarRepairing<G, N>::AStarRepairing(
+template<class G, class S>
+AStarRepairing<G, S>::AStarRepairing(
 	G*     graph,
-	N      start,
+	S      start,
 	double w
 	) :
 	SearchBase(graph), w(w)//, closed([](const Node& a, const Node& b) { return a.thisNode < b.thisNode; })
@@ -65,8 +65,8 @@ AStarRepairing<G, N>::AStarRepairing(
 }
 
 
-template<class G, class N>
-AStarRepairing<G, N>::~AStarRepairing()
+template<class G, class S>
+AStarRepairing<G, S>::~AStarRepairing()
 {
 	// Clean up
 	open.clear();
@@ -75,8 +75,8 @@ AStarRepairing<G, N>::~AStarRepairing()
 }
 
 
-template<class G, class N>
-std::list<N> AStarRepairing<G, N>::nextSolution()
+template<class G, class S>
+std::list<S> AStarRepairing<G, S>::nextSolution()
 {
 	bool solutionFound = false;
 
@@ -92,7 +92,7 @@ std::list<N> AStarRepairing<G, N>::nextSolution()
 			{
 				auto currentNodeIterator = closed.insert(currentNode);
 
-				std::list<N>&& adjtmp = graph->adjacent(currentNode.thisNode);
+				std::list<S>&& adjtmp = graph->adjacent(currentNode.thisNode);
 				size_t adjcnt = adjtmp.size();
 
 				auto it = adjtmp.begin();
@@ -162,7 +162,7 @@ std::list<N> AStarRepairing<G, N>::nextSolution()
 		throw std::runtime_error("No solution");
 
 	// Constructing the solution
-	std::list<N> solution;
+	std::list<S> solution;
 	const Node* currentNode = incumbent;
 	while (currentNode != nullptr)
 	{
