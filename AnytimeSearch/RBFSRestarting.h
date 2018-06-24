@@ -22,11 +22,9 @@ protected:
 		double g;
 		double f;
 		double F;
-		double fw;
-		double FW;
 		bool operator <(const Node x) const
 		{
-			return FW < x.FW;
+			return F < x.F;
 		}
 	};
 	struct NodeComparator
@@ -88,7 +86,8 @@ std::list<S> RBFSRestarting<G, S>::nextSolution()
 		solution.push_front(currentNode->thisNode);
 		const Node* tmp = currentNode;
 		currentNode = currentNode->parentNode;
-		delete tmp;
+		if (tmp != start)
+			delete tmp;
 	}
 
 
@@ -98,6 +97,10 @@ std::list<S> RBFSRestarting<G, S>::nextSolution()
 template<class G, class S>
 typename RBFSRestarting<G, S>::Node* RBFSRestarting<G, S>::RBFS(typename RBFSRestarting<G, S>::Node* currentNode, double limit, double& newF)
 {
+	auto comp = [](const Node* lhs, const Node* rhs) {
+		return *lhs < *rhs; 
+	};
+	
 	if (graph->isGoal(currentNode->thisNode))
 	{
 		newF = currentNode->f;
@@ -122,17 +125,19 @@ typename RBFSRestarting<G, S>::Node* RBFSRestarting<G, S>::RBFS(typename RBFSRes
 		node->thisNode = *it;
 		node->parentNode = currentNode;
 		node->g = currentNode->g + graph->cFunction(currentNode->thisNode, *it);
-		node->f = currentNode->g + graph->hFunction(*it);
+		node->f = node->g + graph->hFunction(*it);
 		// Prune a subtree that leads to a solution which costs more than incumbent
 		if (incumbent != nullptr && incumbent->f <= node->f)
 			node->F = std::numeric_limits<double>::infinity();
-		else
+		else if (currentNode->f < currentNode->F)
 			node->F = node->f > currentNode->F ? node->f : currentNode->F;
+		else
+			node->F = node->f;
 		successors.push_back(node);
 	}
 
 	double Falt, galt;
-	std::sort(successors.begin(), successors.end());
+	std::sort(successors.begin(), successors.end(), comp);
 	if (successors.size() > 1)
 	{
 		Falt = successors[1]->F;
@@ -148,12 +153,12 @@ typename RBFSRestarting<G, S>::Node* RBFSRestarting<G, S>::RBFS(typename RBFSRes
 			result = RBFS(successors[0], limit < galt + w*(Falt - galt) ? limit : galt + w*(Falt - galt), newFReturn);
 		if (result != nullptr)
 		{
-			for (auto it = successors.begin()++; it != successors.end(); it++)
+			for (auto it = ++successors.begin(); it != successors.end(); it++)
 				delete *it;
 			return result;
 		}
 		successors[0]->F = newFReturn;
-		std::sort(successors.begin(), successors.end());
+		std::sort(successors.begin(), successors.end(), comp);
 		if (successors.size() > 1)
 		{
 			Falt = successors[1]->F;

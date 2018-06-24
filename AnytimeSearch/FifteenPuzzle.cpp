@@ -99,14 +99,6 @@ double FifteenPuzzle::hFunction(State& s)
 			int pos = s.positions[i][j];
 			h += std::abs(pos / N - i) + std::abs(pos % N - j);
 		}
-	// Linear conflict
-	/*
-	for (int i = 0; i < N; i++)
-		for (int j1 = 0; j1 < N - 1; j1++)
-			if (s.positions[i][j1] / N == i)
-				for (int j2 = j1 + 1; j2 < N; j2++)
-					if (s.positions[i][j2] / N == i&&s.positions[i][j1]>s.positions[i][j2])
-						h += 2;//*/
 	return h;
 }
 

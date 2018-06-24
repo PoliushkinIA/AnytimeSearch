@@ -140,7 +140,7 @@ int main()
 
 	std::cout << "Anytime WRBFS\n";
 	puzzle = new FifteenPuzzle(start);
-	search = new RBFSRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 1);
+	search = new RBFSRestarting<FifteenPuzzle, FifteenPuzzle::State>(puzzle, puzzle->start, 100/99);
 	puzzle->search = search;
 	startTime = std::chrono::high_resolution_clock::now();
 	total = std::chrono::microseconds::zero();
@@ -157,7 +157,7 @@ int main()
 		std::cout << var->positions[i][j] << ' ';
 		std::cout << "---------------------------------" << std::endl;
 		}*/
-		std::cout << "Solving took " << duration.count() << "us\n" << "Solution length is " << it->size() << '\n' << "Error bound is " << search->error << std::endl;
+		std::cout << "Solving took " << duration.count() << "us\n" << "Solution length is " << it->size()/* << '\n' << "Error bound is " << search->error*/ << std::endl;
 		total += duration;
 		startTime = std::chrono::high_resolution_clock::now();
 	}
